@@ -14,9 +14,33 @@ from openpyxl.styles import PatternFill
 from sheet2dict import Worksheet
 import os, sys
 
+nome_planilha = "Resultado.xlsx"
 
-def organizarExcel(excel):
-    writer = pd.ExcelWriter('teste.xlsx', engine='openpyxl', if_sheet_exists='replace', mode='a')
+
+def adicionar_ou_criar_planilha(lista_dict_acoes, nome_planilha): #recebe lista de dicionarios
+        
+    dfFinal = pd.DataFrame(lista_dict_acoes) #transforma dicionarios em dataframe
+    dfFinal = dfFinal.reindex(['TICKER', 'Nome', 'Valor Atual do Ativo', 'Min 52 Semanas', 'Min Mês', 'Max 52 Semanas', 'Max Mês', 'Dividend Yeld', 'Dividend Yeld 12 Meses', 'Valorização (12M)', 'Valorização Mês Atual', 'Tipo', 'TAG ALONG', 'Liquidez Média Diária', 'P/L', 'PEG RATIO', 'P/VP', 'EV/EBITDA', 'EV/EBIT', 'P/EBITDA', 'P/EBIT', 'VPA', 'P/ATIVO', 'LPA', 'P/SR', 'P/CAP. GIRO', 'P/ATIVO CIRC. LIQ', 'DÍV. LÍQUIDA/PL', 'DÍV. LÍQUIDA/EBITDA', 'DÍV. LÍQUIDA/EBIT', 'PL/ATIVOS', 'PASSIVOS/ATIVOS', 'LIQ. CORRENTE', 'M. BRUTA', 'M. EBITDA', 'M. EBIT', 'M. LÍQUIDA', 'ROE', 'ROA', 'ROIC', 'GIRO ATIVOS', 'CAGR RECEITAS 5 ANOS', 'CAGR LUCROS 5 ANOS', 'Dividendo 2013', 'Dividendo 2014', 'Dividendo 2015', 'Dividendo 2016', 'Dividendo 2017', 'Dividendo 2018', 'Dividendo 2019', 'Dividendo 2020', 'Dividendo 2021', 'Dividendo 2022', 'Payout Médio', 'Payout Atual', 'Payout Menor Valor', 'Payout Maior Valor', 'Payout Médio 2018', 'Payout Médio 2019', 'Payout Médio 2020', 'Payout Médio 2021', 'Payout Médio 2022', 'Lucro Líquido 2018', 'Lucro Líquido 2019', 'Lucro Líquido 2020', 'Lucro Líquido 2021', 'Lucro Líquido 2022', 'Proventos 2018', 'Proventos 2019', 'Proventos 2020', 'Proventos 2021', 'Proventos 2022', 'Patriônio Líquido', 'Ativos', 'Ativo Circulante', 'Dívida Bruta', 'Disponibilidade', 'Dívida Líquida', 'Valor de Mercado', 'Valor de Firma', 'Nº Total de Papéis', 'Segmento de Listagem', 'Free Float'], axis=1)
+    dfFinal.to_excel(nome_planilha, index=False)
+
+
+def pegar_tickers_planilha(nome_planilha):
+        df_planilha = pd.read_excel(nome_planilha, sheet_name='Sheet1') # can also index sheet by name or fetch all sheets
+        
+        df_planilha['TICKER'] = df_planilha['TICKER'].str.upper()
+        # print(df_planilha)
+        df_planilha = df_planilha.drop_duplicates(subset='TICKER', keep="first")
+        df_planilha = df_planilha.dropna(subset='TICKER')
+        lista_tickers = df_planilha['TICKER'].tolist()
+
+        if not lista_tickers:
+            raise Exception("Planilha vazia")
+
+        return lista_tickers
+
+
+def organizar_planilha(nome_planilha):
+    writer = pd.ExcelWriter(nome_planilha, engine='openpyxl', if_sheet_exists='replace', mode='a')
 
     workbook  = writer.book
 
@@ -164,20 +188,17 @@ def buscarTIK(tik):
         
         ws = Worksheet()
 
-        df = pd.DataFrame([dados])
-
-        isFile = os.path.isfile('teste.xlsx')
-        if(isFile == False):
-            df1 = pd.DataFrame(columns=['TICKER', 'Nome', 'Valor Atual do Ativo', 'Min 52 Semanas', 'Min Mês', 'Max 52 Semanas', 'Max Mês', 'Dividend Yeld', 'Dividend Yeld 12 Meses', 'Valorização (12M)', 'Valorização Mês Atual', 'Tipo', 'TAG ALONG', 'Liquidez Média Diária', 'P/L', 'PEG RATIO', 'P/VP', 'EV/EBITDA', 'EV/EBIT', 'P/EBITDA', 'P/EBIT', 'VPA', 'P/ATIVO', 'LPA', 'P/SR', 'P/CAP. GIRO', 'P/ATIVO CIRC. LIQ', 'DÍV. LÍQUIDA/PL', 'DÍV. LÍQUIDA/EBITDA', 'DÍV. LÍQUIDA/EBIT', 'PL/ATIVOS', 'PASSIVOS/ATIVOS', 'LIQ. CORRENTE', 'M. BRUTA', 'M. EBITDA', 'M. EBIT', 'M. LÍQUIDA', 'ROE', 'ROA', 'ROIC', 'GIRO ATIVOS', 'CAGR RECEITAS 5 ANOS', 'CAGR LUCROS 5 ANOS', 'Dividendo 2013', 'Dividendo 2014', 'Dividendo 2015', 'Dividendo 2016', 'Dividendo 2017', 'Dividendo 2018', 'Dividendo 2019', 'Dividendo 2020', 'Dividendo 2021', 'Dividendo 2022', 'Payout Médio', 'Payout Atual', 'Payout Menor Valor', 'Payout Maior Valor', 'Payout Médio 2018', 'Payout Médio 2019', 'Payout Médio 2020', 'Payout Médio 2021', 'Payout Médio 2022', 'Lucro Líquido 2018', 'Lucro Líquido 2019', 'Lucro Líquido 2020', 'Lucro Líquido 2021', 'Lucro Líquido 2022', 'Proventos 2018', 'Proventos 2019', 'Proventos 2020', 'Proventos 2021', 'Proventos 2022', 'Patriônio Líquido', 'Ativos', 'Ativo Circulante', 'Dívida Bruta', 'Disponibilidade', 'Dívida Líquida', 'Valor de Mercado', 'Valor de Firma', 'Nº Total de Papéis', 'Segmento de Listagem', 'Free Float'])
-
-            df1.to_excel('teste.xlsx', index=False)
-            print('okkkkkkkkkk')
 
 
-        dictPlanilha = ws.xlsx_to_dict(path='teste.xlsx')
-        dfPlanilha = pd.DataFrame(data=dictPlanilha.sheet_items)
-        dfFinal = pd.concat([df, dfPlanilha], axis=0)
-        dfFinal = dfFinal.reindex(['TICKER', 'Nome', 'Valor Atual do Ativo', 'Min 52 Semanas', 'Min Mês', 'Max 52 Semanas', 'Max Mês', 'Dividend Yeld', 'Dividend Yeld 12 Meses', 'Valorização (12M)', 'Valorização Mês Atual', 'Tipo', 'TAG ALONG', 'Liquidez Média Diária', 'P/L', 'PEG RATIO', 'P/VP', 'EV/EBITDA', 'EV/EBIT', 'P/EBITDA', 'P/EBIT', 'VPA', 'P/ATIVO', 'LPA', 'P/SR', 'P/CAP. GIRO', 'P/ATIVO CIRC. LIQ', 'DÍV. LÍQUIDA/PL', 'DÍV. LÍQUIDA/EBITDA', 'DÍV. LÍQUIDA/EBIT', 'PL/ATIVOS', 'PASSIVOS/ATIVOS', 'LIQ. CORRENTE', 'M. BRUTA', 'M. EBITDA', 'M. EBIT', 'M. LÍQUIDA', 'ROE', 'ROA', 'ROIC', 'GIRO ATIVOS', 'CAGR RECEITAS 5 ANOS', 'CAGR LUCROS 5 ANOS', 'Dividendo 2013', 'Dividendo 2014', 'Dividendo 2015', 'Dividendo 2016', 'Dividendo 2017', 'Dividendo 2018', 'Dividendo 2019', 'Dividendo 2020', 'Dividendo 2021', 'Dividendo 2022', 'Payout Médio', 'Payout Atual', 'Payout Menor Valor', 'Payout Maior Valor', 'Payout Médio 2018', 'Payout Médio 2019', 'Payout Médio 2020', 'Payout Médio 2021', 'Payout Médio 2022', 'Lucro Líquido 2018', 'Lucro Líquido 2019', 'Lucro Líquido 2020', 'Lucro Líquido 2021', 'Lucro Líquido 2022', 'Proventos 2018', 'Proventos 2019', 'Proventos 2020', 'Proventos 2021', 'Proventos 2022', 'Patriônio Líquido', 'Ativos', 'Ativo Circulante', 'Dívida Bruta', 'Disponibilidade', 'Dívida Líquida', 'Valor de Mercado', 'Valor de Firma', 'Nº Total de Papéis', 'Segmento de Listagem', 'Free Float'], axis=1)
+        # df_planilha = pd.read_excel(nome_planilha, sheet_name='Sheet1') # can also index sheet by name or fetch all sheets
+        # df_planilha.drop_duplicates(subset='TICKER', keep="first")
+
+        # dictPlanilha = ws.xlsx_to_dict(path=nome_planilha)
+
+
+        # dfFinal = pd.concat([df, df_planilha], axis=0)
+        # dfPlanilha = pd.DataFrame(data=dictPlanilha.sheet_items)
+        # dfFinal = dfFinal.drop_duplicates(subset='TICKER')
         # dfOrdered = dfFinal[['TICKER', 'Nome', 'Valor Atual do Ativo', 'Min 52 Semanas', 'Min Mês', 'Max 52 Semanas', 'Max Mês', 'Dividend Yeld', 'Dividend Yeld 12 Meses', 'Valorização (12M)', 'Valorização Mês Atual', 'Tipo', 'TAG ALONG', 'Liquidez Média Diária', 'P/L', 'PEG RATIO', 'P/VP', 'EV/EBITDA', 'EV/EBIT', 'P/EBITDA', 'P/EBIT', 'VPA', 'P/ATIVO', 'LPA', 'P/SR', 'P/CAP. GIRO', 'P/ATIVO CIRC. LIQ', 'DÍV. LÍQUIDA/PL', 'DÍV. LÍQUIDA/EBITDA', 'DÍV. LÍQUIDA/EBIT', 'PL/ATIVOS', 'PASSIVOS/ATIVOS', 'LIQ. CORRENTE', 'M. BRUTA', 'M. EBITDA', 'M. EBIT', 'M. LÍQUIDA', 'ROE', 'ROA', 'ROIC', 'GIRO ATIVOS', 'CAGR RECEITAS 5 ANOS', 'CAGR LUCROS 5 ANOS', 'Dividendo 2013', 'Dividendo 2014', 'Dividendo 2015', 'Dividendo 2016', 'Dividendo 2017', 'Dividendo 2018', 'Dividendo 2019', 'Dividendo 2020', 'Dividendo 2021', 'Dividendo 2022', 'Payout Médio', 'Payout Atual', 'Payout Menor Valor', 'Payout Maior Valor', 'Payout Médio 2018', 'Payout Médio 2019', 'Payout Médio 2020', 'Payout Médio 2021', 'Payout Médio 2022', 'Lucro Líquido 2018', 'Lucro Líquido 2019', 'Lucro Líquido 2020', 'Lucro Líquido 2021', 'Lucro Líquido 2022', 'Proventos 2018', 'Proventos 2019', 'Proventos 2020', 'Proventos 2021', 'Proventos 2022', 'Patriônio Líquido', 'Ativos', 'Ativo Circulante', 'Dívida Bruta', 'Disponibilidade', 'Dívida Líquida', 'Valor de Mercado', 'Valor de Firma', 'Nº Total de Papéis', 'Segmento de Listagem', 'Free Float']]
         # print(dado)
 
@@ -185,14 +206,14 @@ def buscarTIK(tik):
 
         dadosFormatados = json.dumps(dados, indent=2, ensure_ascii=False)
 
-        # df.to_excel('teste.xlsx', index=False)
+        # df.to_excel(nome_planilha, index=False)
 
-        dfFinal.to_excel('teste.xlsx', index=False)
+        # dfFinal.to_excel(nome_planilha, index=False)
 
 
 
         #dados.values() = linhas da planilha
-        print(dadosFormatados)
+        # print(dadosFormatados)
 
         # listaTIKS = [i for i in dados.values()]
 
@@ -201,15 +222,24 @@ def buscarTIK(tik):
         # valores_adicionar.append(listaTIKS)
 
 
-        return "ok"
+        return dados
     
 
 # tickers = ['AZUL4', 'BBAS3', 'POMO4', 'CPLE6', 'CSAN3', 'PRIO3', 'ABEV3', 'KRSA3', 'PETZ3', 'LWSA3', 'SOMA3', 'PETR3', 'MRVE3', 'VBBR3', 'HBSA3', 'ENEV3', 'RAIL3', 'CMIN3', 'EQTL3', 'JBSS3', 'GOAU4', 'DMMO3', 'SUZB3', 'CCRO3', 'AERI3', 'GOLL4', 'RENT3', 'DXCO3', 'AMAR3', 'RRRP3', 'ASAI3', 'WEGE3', 'UGPA3', 'BEEF3', 'TOTS3', 'YDUQ3', 'TEND3', 'CEAB3', 'MULT3', 'GUAR3', 'SIMH3', 'ONCO3', 'TRPL4', 'AZEV4', 'ELET3', 'CMIG4', 'BBDC3', 'KLBN4', 'ALSO3', 'EMBR3', 'ECOR3', 'MOVI3', 'BBSE3', 'ESPA3', 'GMAT3', 'STBP3', 'VAMO3', 'TIMS3', 'MODL3', 'QUAL3', 'MEAL3', 'POSI3', 'RAPT4', 'CYRE3', 'ALPA4', 'GFSA3', 'LJQQ3', 'FLRY3', 'BRPR3', 'EZTC3', 'DIRR3', 'MYPK3', 'INEP3', 'LIGT3', 'BRSR6', 'PCAR3', 'ANIM3', 'RECV3', 'BRAP4', 'RADL3', 'HYPE3', 'LUPA3', 'BPAN4', 'CBAV3', 'MLAS3', 'GGPS3', 'ENBR3', 'MDIA3', 'SAPR4', 'CRFB3', 'SEQL3', 'SBSP3', 'RCSL4', 'BRKM5', 'WIZS3', 'OIBR4', 'JHSF3', 'AMBP3', 'SMTO3', 'GRND3', 'PSSA3', 'TASA4', 'BMGB4', 'RANI3', 'ODPV3', 'CXSE3', 'SLCE3', 'SHOW3', 'PGMN3', 'ENAT3', 'AESB3', 'VIVT3', 'OPCT3', 'EGIE3', 'CURY3', 'VIVA3', 'SEER3', 'TTEN3', 'EVEN3', 'ELET6', 'HBOR3', 'ARZZ3', 'SBFG3', 'TRIS3', 'DASA3', 'CAML3', 'CPFE3', 'JSLG3', 'NEOE3', 'CSMG3', 'BOAS3', 'MILS3', 'KEPL3', 'PORT3', 'AZEV3', 'AALR3', 'PTBL3', 'KLBN3', 'ENJU3', 'PARD3', 'TUPY3', 'BMOB3', 'VITT3', 'POMO3', 'INTB3', 'CPLE3', 'TPIS3', 'TRAD3', 'CMIG3']
-# tickers = ['AZUL4', 'BBAS3']
+
+tickers = []
+
+try:
+    tickers = pegar_tickers_planilha(nome_planilha)
+except Exception:
+    print("Erro")
+
+lista_dict_acoes = []
 
 
-# for ticker in tickers:
-#     buscarTIK(ticker)
-#     print(f'Ticker: {ticker} salvo')
-buscarTIK("BBSE3")
-print(organizarExcel('teste.xlsx'))
+for ticker in tickers:
+    lista_dict_acoes.append(buscarTIK(ticker))
+    print(f'Dados do Ticker {ticker} salvos!')
+
+adicionar_ou_criar_planilha(lista_dict_acoes, nome_planilha)
+organizar_planilha(nome_planilha)
